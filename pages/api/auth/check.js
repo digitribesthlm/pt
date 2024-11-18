@@ -1,4 +1,3 @@
-import { verify } from 'jsonwebtoken'
 import { connectToDatabase } from '../../../utils/mongodb'
 import { ObjectId } from 'mongodb'
 
