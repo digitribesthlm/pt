@@ -1,11 +1,16 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { useApp } from '../context/AppContext'
 import Navigation from './Navigation'
 import { workouts } from '../data/workouts'
 import { ROUTES } from '../lib/constants'
 
 export default function WorkoutList() {
-  const { activeWorkout, endWorkout: contextEndWorkout, navigate } = useApp()
+  const { 
+    activeWorkout, 
+    endWorkout: contextEndWorkout, 
+    navigate,
+    user 
+  } = useApp()
   const [selectedExercises, setSelectedExercises] = useState([])
   const [searchTerm, setSearchTerm] = useState('')
   const [timer, setTimer] = useState(0)
@@ -26,6 +31,14 @@ export default function WorkoutList() {
     }
     return () => clearInterval(interval)
   }, [isWorkoutStarted])
+
+  useEffect(() => {
+    // Redirect if no user
+    if (!user?._id) {
+      console.log('No user found in WorkoutList, redirecting to login')
+      navigate(ROUTES.LOGIN)
+    }
+  }, [user, navigate])
 
   const formatTime = (seconds) => {
     const hrs = Math.floor(seconds / 3600)
@@ -125,6 +138,56 @@ export default function WorkoutList() {
       return sets.some(set => set.reps && set.weight)
     }
     return selectedMeasureType === 'time' && time
+  }
+
+  const saveWorkout = useCallback(async (workoutData) => {
+    const res = await fetch('/api/workouts/save', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(workoutData),
+    })
+
+    if (!res.ok) {
+      const errorData = await res.json()
+      throw new Error(errorData.message || 'Failed to save workout')
+    }
+
+    return res.json()
+  }, [])
+
+  const handleSaveWorkout = async () => {
+    try {
+      if (!user?._id) {
+        throw new Error('No user ID found - please log in again')
+      }
+
+      const workoutData = {
+        userId: user._id,
+        name: `Träningspass ${new Date().toLocaleDateString('sv-SE')}`,
+        exercises: selectedExercises.map(exercise => ({
+          name: exercise.name,
+          measureType: exercise.measureType || 'reps',
+          value: exercise.measureType === 'time' ? 
+            parseInt(exercise.time) || 0 : 
+            exercise.sets.reduce((total, set) => total + parseInt(set.reps || 0), 0),
+          completed: true
+        })),
+        duration: timer
+      }
+
+      console.log('Saving workout with data:', workoutData)
+
+      await saveWorkout(workoutData)
+
+      alert('Träningspass sparat!')
+      contextEndWorkout()
+      navigate(ROUTES.DASHBOARD)
+    } catch (error) {
+      console.error('Error saving workout:', error)
+      alert('Kunde inte spara träningspasset: ' + error.message)
+    }
   }
 
   return (
@@ -479,7 +542,7 @@ export default function WorkoutList() {
             onClick={() => setShowExerciseList(true)}
             className="btn btn-primary flex-1"
           >
-            Nästa övning
+            Lägg till övning
           </button>
         )}
         <button 
@@ -489,10 +552,10 @@ export default function WorkoutList() {
           Rensa
         </button>
         <button 
-          onClick={handleEndWorkout}
+          onClick={handleSaveWorkout}
           className="btn btn-secondary flex-1"
         >
-          Avsluta pass
+          Avsluta & Spara
         </button>
       </div>
     </div>

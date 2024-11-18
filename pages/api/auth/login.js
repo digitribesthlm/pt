@@ -17,30 +17,32 @@ export default async function handler(req, res) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        // Create a secure token (in production, use proper JWT)
+        // Make sure we're sending the _id
+        const userData = {
+            _id: user._id.toString(), // Convert ObjectId to string
+            email: user.email,
+            role: user.role,
+            clientId: user.clientId
+        }
+
+        console.log('Login API - Sending user data:', userData) // Debug log
+
+        // Create a secure token
         const token = Buffer.from(JSON.stringify({
-            userId: user._id,
+            userId: user._id.toString(),
             email: user.email,
             role: user.role
         })).toString('base64');
 
-        // Set secure cookie
         res.setHeader('Set-Cookie', serialize('auth-token', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
             sameSite: 'strict',
-            maxAge: 3600, // 1 hour
+            maxAge: 3600,
             path: '/'
         }));
 
-        // Return user data
-        res.status(200).json({
-            user: {
-                email: user.email,
-                role: user.role,
-                clientId: user.clientId
-            }
-        });
+        res.status(200).json({ user: userData });
     } catch (error) {
         console.error('Login error:', error);
         res.status(500).json({ message: 'Internal server error' });

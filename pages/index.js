@@ -1,34 +1,30 @@
-import { useApp } from '../context/AppContext'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/router'
 import Dashboard from '../components/Dashboard'
-import WorkoutHistory from '../components/WorkoutHistory'
-import WorkoutList from '../components/WorkoutList'
-import Messages from '../components/Messages'
-import ExerciseLibrary from '../components/ExerciseLibrary'
-import { ROUTES } from '../lib/constants'
 
 export default function Home() {
-  const { currentScreen } = useApp()
+  const router = useRouter()
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [loading, setLoading] = useState(true)
 
-  const renderScreen = () => {
-    switch (currentScreen) {
-      case ROUTES.DASHBOARD:
-        return <Dashboard />
-      case ROUTES.WORKOUT_HISTORY:
-        return <WorkoutHistory />
-      case ROUTES.WORKOUT_SESSION:
-        return <WorkoutList />
-      case ROUTES.MESSAGES:
-        return <Messages />
-      case ROUTES.EXERCISE_LIBRARY:
-        return <ExerciseLibrary />
-      default:
-        return <Dashboard />
+  useEffect(() => {
+    // Check auth token in client-side only
+    const hasAuthToken = document.cookie.includes('auth-token')
+    if (!hasAuthToken) {
+      router.push('/login')
+    } else {
+      setIsAuthenticated(true)
     }
+    setLoading(false)
+  }, [])
+
+  if (loading) {
+    return null // or a loading spinner
   }
 
-  return (
-    <div className="min-h-screen bg-base-200">
-      {renderScreen()}
-    </div>
-  )
+  if (!isAuthenticated) {
+    return null
+  }
+
+  return <Dashboard />
 }

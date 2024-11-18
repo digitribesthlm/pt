@@ -2,11 +2,9 @@ import React from 'react'
 import { useApp } from '../context/AppContext'
 import { ROUTES } from '../lib/constants'
 import Navigation from './Navigation'
-import { savedWorkouts } from '../data/savedWorkouts'
-import { ptWorkouts } from '../data/ptWorkouts'
 
 export default function Dashboard() {
-  const { navigate, startWorkout } = useApp()
+  const { navigate, startWorkout, ptWorkouts, savedWorkouts } = useApp()
 
   const handleStartEmptyWorkout = () => {
     startWorkout()

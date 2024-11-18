@@ -2,11 +2,9 @@ import React from 'react'
 import { useApp } from '../context/AppContext'
 import Navigation from './Navigation'
 import { ROUTES } from '../lib/constants'
-import { savedWorkouts } from '../data/savedWorkouts'
-import { ptWorkouts } from '../data/ptWorkouts'
 
 export default function WorkoutHistory() {
-  const { navigate, startWorkout } = useApp()
+  const { navigate, startWorkout, ptWorkouts, savedWorkouts } = useApp()
 
   const handleStartEmptyWorkout = () => {
     startWorkout()
