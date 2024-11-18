@@ -3,20 +3,24 @@ import Dashboard from '../components/Dashboard'
 import WorkoutHistory from '../components/WorkoutHistory'
 import WorkoutList from '../components/WorkoutList'
 import Messages from '../components/Messages'
+import ExerciseLibrary from '../components/ExerciseLibrary'
+import { ROUTES } from '../lib/constants'
 
 export default function Home() {
   const { currentScreen } = useApp()
 
   const renderScreen = () => {
     switch (currentScreen) {
-      case 'dashboard':
+      case ROUTES.DASHBOARD:
         return <Dashboard />
-      case 'workout-history':
+      case ROUTES.WORKOUT_HISTORY:
         return <WorkoutHistory />
-      case 'workout-session':
+      case ROUTES.WORKOUT_SESSION:
         return <WorkoutList />
-      case 'messages':
+      case ROUTES.MESSAGES:
         return <Messages />
+      case ROUTES.EXERCISE_LIBRARY:
+        return <ExerciseLibrary />
       default:
         return <Dashboard />
     }
@@ -28,4 +32,3 @@ export default function Home() {
     </div>
   )
 }
-
