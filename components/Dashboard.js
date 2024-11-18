@@ -2,6 +2,7 @@ import React from 'react'
 import { useApp } from '../context/AppContext'
 import { ROUTES } from '../lib/constants'
 import Navigation from './Navigation'
+import PTProgram from './PTProgram'
 
 export default function Dashboard() {
   const { navigate, startWorkout, ptWorkouts, savedWorkouts } = useApp()
@@ -10,8 +11,6 @@ export default function Dashboard() {
     startWorkout()
     navigate(ROUTES.WORKOUT_SESSION)
   }
-
-  const latestPTWorkout = ptWorkouts[0] // Get most recent PT workout
 
   // Get the last 3 workouts for the history preview
   const recentWorkouts = savedWorkouts.slice(0, 3)
@@ -50,29 +49,35 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* PT Program Section */}
-        {latestPTWorkout && (
-          <div className="card bg-base-200">
-            <div className="card-body">
-              <div className="flex justify-between items-start mb-4">
-                <div>
-                  <h2 className="card-title">Ditt PT program</h2>
-                  <p className="text-sm opacity-70">Från: {latestPTWorkout.assignedBy}</p>
-                </div>
-                <div className="badge badge-primary">Nytt</div>
-              </div>
-              <p className="text-sm opacity-70 mb-4">{latestPTWorkout.description}</p>
-              <div className="card-actions">
-                <button 
-                  onClick={() => navigate(ROUTES.WORKOUT_HISTORY)}
-                  className="btn btn-primary btn-block"
-                >
-                  Starta dagens PT pass
-                </button>
-              </div>
+        {/* Main Action Buttons */}
+        <div className="space-y-2">
+          <button 
+            onClick={handleStartEmptyWorkout}
+            className="btn btn-block"
+          >
+            Starta eget träningspass
+          </button>
+          
+          <button 
+            onClick={() => navigate(ROUTES.EXERCISE_LIBRARY)}
+            className="btn btn-block btn-outline"
+          >
+            Dina övningar
+          </button>
+        </div>
+
+        {/* PT Programs Section */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-bold">PT Program för dig</h2>
+          {ptWorkouts.map((workout, index) => (
+            <PTProgram key={workout._id} workout={workout} />
+          ))}
+          {ptWorkouts.length === 0 && (
+            <div className="text-center p-4 bg-base-200 rounded-lg">
+              <p className="opacity-70">Inga PT program tillgängliga än</p>
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Messages Section */}
         <div className="card bg-base-200">
@@ -94,23 +99,6 @@ export default function Dashboard() {
               <span className="text-sm opacity-70">Funkar toppen</span>
             </div>
           </div>
-        </div>
-
-        {/* Main Action Buttons */}
-        <div className="space-y-2">
-          <button 
-            onClick={handleStartEmptyWorkout}
-            className="btn btn-block"
-          >
-            Starta eget träningspass
-          </button>
-          
-          <button 
-            onClick={() => navigate(ROUTES.EXERCISE_LIBRARY)}
-            className="btn btn-block btn-outline"
-          >
-            Dina övningar
-          </button>
         </div>
 
         {/* Training History */}

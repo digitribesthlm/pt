@@ -17,15 +17,18 @@ export default async function handler(req, res) {
             return res.status(401).json({ message: 'Invalid credentials' });
         }
 
-        // Make sure we're sending the _id
+        // Include more comprehensive user data
         const userData = {
-            _id: user._id.toString(), // Convert ObjectId to string
+            _id: user._id.toString(),
+            name: user.name,
             email: user.email,
             role: user.role,
-            clientId: user.clientId
+            pt: user.pt,
+            stats: user.stats,
+            workouts: user.workouts
         }
 
-        console.log('Login API - Sending user data:', userData) // Debug log
+        console.log('Login API - Sending user data:', userData)
 
         // Create a secure token
         const token = Buffer.from(JSON.stringify({
