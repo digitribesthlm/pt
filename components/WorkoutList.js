@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { useApp } from '../context/AppContext'
 import Navigation from './Navigation'
-import { workouts } from '../data/workouts'
 import { ROUTES } from '../lib/constants'
 
 export default function WorkoutList() {
@@ -21,6 +20,30 @@ export default function WorkoutList() {
   const [selectedMeasureType, setSelectedMeasureType] = useState(null)
   const [sets, setSets] = useState([{ reps: '', weight: '' }])
   const [time, setTime] = useState('')
+  const [availableExercises, setAvailableExercises] = useState([])
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    const fetchExercises = async () => {
+      try {
+        setIsLoading(true)
+        const response = await fetch('/api/workouts/exercises')
+        if (!response.ok) {
+          throw new Error('Failed to fetch exercises')
+        }
+        const data = await response.json()
+        setAvailableExercises(data)
+      } catch (error) {
+        console.error('Error fetching exercises:', error)
+        setError('Failed to load exercises')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchExercises()
+  }, [])
 
   useEffect(() => {
     let interval
@@ -49,7 +72,7 @@ export default function WorkoutList() {
 
   const getVideoId = (url) => {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/
-    const match = url.match(regExp)
+    const match = url?.match(regExp)
     return (match && match[2].length === 11) ? match[2] : null
   }
 
@@ -121,25 +144,6 @@ export default function WorkoutList() {
     handleAddExercise(measurementModal, selectedMeasureType, values)
   }
 
-  const handleClear = () => {
-    setSelectedExercises([])
-    setIsWorkoutStarted(false)
-    setTimer(0)
-    setShowExerciseList(true)
-    setSelectedVideo(null)
-    setMeasurementModal(null)
-    setSets([{ reps: '', weight: '' }])
-    setTime('')
-    setSelectedMeasureType(null)
-  }
-
-  const isValidMeasurement = () => {
-    if (selectedMeasureType === 'repsWeight') {
-      return sets.some(set => set.reps && set.weight)
-    }
-    return selectedMeasureType === 'time' && time
-  }
-
   const saveWorkout = useCallback(async (workoutData) => {
     const res = await fetch('/api/workouts/save', {
       method: 'POST',
@@ -189,6 +193,31 @@ export default function WorkoutList() {
       alert('Kunde inte spara träningspasset: ' + error.message)
     }
   }
+
+  const handleClear = () => {
+    setSelectedExercises([])
+    setIsWorkoutStarted(false)
+    setTimer(0)
+    setShowExerciseList(true)
+    setSelectedVideo(null)
+    setMeasurementModal(null)
+    setSets([{ reps: '', weight: '' }])
+    setTime('')
+    setSelectedMeasureType(null)
+  }
+
+  const isValidMeasurement = () => {
+    if (selectedMeasureType === 'repsWeight') {
+      return sets.some(set => set.reps && set.weight)
+    }
+    return selectedMeasureType === 'time' && time
+  }
+
+  // Filter exercises based on search term
+  const filteredExercises = availableExercises.filter(exercise => 
+    exercise.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    exercise.description.toLowerCase().includes(searchTerm.toLowerCase())
+  )
 
   return (
     <div className="min-h-screen bg-base-300 text-base-content pb-20">
@@ -346,22 +375,20 @@ export default function WorkoutList() {
 
             {/* Exercise List */}
             <div className="space-y-2">
-              {workouts.filter(w => 
-                w.name.toLowerCase().includes(searchTerm.toLowerCase())
-              ).map((workout) => (
+              {filteredExercises.map((exercise) => (
                 <div 
-                  key={workout.id}
+                  key={exercise._id}
                   className="card bg-base-200"
                 >
                   <div className="card-body p-4">
                     <div className="flex justify-between items-center">
                       <div className="font-medium">
-                        <span className="opacity-50">#{workout.id}</span> {workout.name}
+                        {exercise.name}
                       </div>
                       <div className="flex items-center gap-2">
-                        {workout.videoUrl && (
+                        {exercise.videoUrl && (
                           <button 
-                            onClick={() => setSelectedVideo(workout)}
+                            onClick={() => setSelectedVideo(exercise)}
                             className="btn btn-circle btn-sm btn-primary"
                           >
                             ▶
@@ -371,7 +398,7 @@ export default function WorkoutList() {
                     </div>
                     <div className="flex justify-between gap-2 mt-2">
                       <button 
-                        onClick={() => handleMeasurementTypeClick(workout)}
+                        onClick={() => handleMeasurementTypeClick(exercise)}
                         className="btn btn-primary flex-1"
                       >
                         Lägg till övning
@@ -447,7 +474,7 @@ export default function WorkoutList() {
               <div className="space-y-2">
                 {selectedExercises.slice(0, -1).reverse().map((exercise, index) => (
                   <div 
-                    key={`${exercise.id}-${index}`}
+                    key={`${exercise._id}-${index}`}
                     className="bg-base-300 rounded-box p-4"
                   >
                     <div className="flex justify-between items-center">

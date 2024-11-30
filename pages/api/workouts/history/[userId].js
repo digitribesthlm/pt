@@ -15,7 +15,6 @@ export default async function handler(req, res) {
       db.collection('completed_workouts')
         .find({ userId })
         .sort({ completed: -1 })
-        .limit(10)
         .toArray(),
       db.collection('workout_programs')
         .find({ userId })
@@ -31,7 +30,7 @@ export default async function handler(req, res) {
       const dateA = new Date(a.completed || a.created)
       const dateB = new Date(b.completed || b.created)
       return dateB - dateA
-    }).slice(0, 10)
+    })
 
     res.status(200).json(allWorkouts)
   } catch (error) {

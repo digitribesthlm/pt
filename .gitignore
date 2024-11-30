@@ -19,7 +19,7 @@
 /build
 
 # data directory
-/data/
+
 
 # misc
 .DS_Store

@@ -90,7 +90,6 @@ export function AppProvider({ children }) {
 
       console.log('Login response data:', data)
 
-      // Save user data to localStorage and state
       localStorage.setItem('user', JSON.stringify(data.user))
       setUser(data.user)
 
@@ -102,7 +101,9 @@ export function AppProvider({ children }) {
 
   const value = {
     currentScreen,
-    navigate: setCurrentScreen,
+    navigate: (route) => {
+      window.location.href = route
+    },
     activeWorkout,
     workoutTimer,
     presetExercises,
@@ -111,12 +112,24 @@ export function AppProvider({ children }) {
     user,
     setUser,
     login,
-    startWorkout: (exercises = null) => {
+    startWorkout: (workout) => {
+      if (!workout || !workout.exercises) {
+        console.error('Invalid workout data:', workout)
+        return
+      }
+
+      // Ensure each exercise has the required properties
+      const exercises = workout.exercises.map(exercise => ({
+        ...exercise,
+        completed: false,
+        sets: exercise.sets || []
+      }))
+
       setActiveWorkout({
+        ...workout,
+        exercises,
         startTime: new Date(),
-        exercises: []
       })
-      setPresetExercises(exercises)
     },
     endWorkout: () => {
       setActiveWorkout(null)

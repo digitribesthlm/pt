@@ -8,7 +8,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Check auth token in client-side only
+    // Check auth tokens in client-side only
     const hasAuthToken = document.cookie.includes('auth-token')
     if (!hasAuthToken) {
       router.push('/login')

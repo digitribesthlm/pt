@@ -19,7 +19,12 @@
   "devDependencies": {
     "autoprefixer": "latest",
     "daisyui": "latest",
+    "eslint": "^9.15.0",
+    "eslint-config-next": "^15.0.3",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
     "postcss": "latest",
+    "prettier": "^3.3.3",
     "tailwindcss": "latest"
   }
 }
